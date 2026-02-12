@@ -1,6 +1,9 @@
 # SpeechShapingLayer
-Speech Shaping Layer script for Home Assistant
+## Speech Shaping Layer script for Home Assistant 
 
+### This script is for PERSONAL USE
+
+# Let`s go
 - SpeechShapingLayer script is NOT dependent on the LLM model.
 - It will work with any model that accepts plain text and returns plain text.
 
@@ -25,6 +28,12 @@ So the LLM is only receiving:
 
 The AI model is NOT generating the SSML, the script is generating it.
 
+# ✅ Install in Home Assistant
+
+- Make sure you have installed ```Pyscript``` from HACS, in your HA
+- Download python script hyperalive.py from here and place it in your ```/homeassistant/pyscript``` folder.
+- Click on script to edit inside and modify this agent line to yours ```agent_id="conversation.kira_local",``` ( mine is called `conversation.kira_local`) this need to be replaced with your current agent.
+- After replace restart HA, the script will start working with the agent set inside
 
 # 🔎 So What Determines Compatibility?
 
