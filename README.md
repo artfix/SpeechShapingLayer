@@ -143,6 +143,40 @@ It only depends on:
 
 - Whether HA conversation agent passes the text through correctly.
 
+
+_____________________________________________________________________________________________________________
+
+# 🎛️ Kira Voice Cheat Sheet: emotion_level vs Features
+
+| `emotion_level` | Intensity multiplier | Expected Behavior    | Soft Swears | Laughter / Giggles | Whispers / Sighs | Micro-breaths / Prosody            |
+| --------------- | -------------------- | -------------------- | ----------- | ------------------ | ---------------- | ---------------------------------- |
+| **0.2**         | Very low             | Almost deadpan       | Very rare   | Almost none        | Almost none      | Very subtle                        |
+| **0.4**         | Low                  | Quiet & calm         | Rare        | Occasional         | Occasional       | Slight pitch / rate variation      |
+| **0.5**         | Moderate             | Mildly expressive    | Sometimes   | Sometimes          | Sometimes        | Noticeable, still subtle           |
+| **0.7**         | Balanced             | Natural, lively      | Occasional  | Frequent           | Frequent         | Clear pitch slides & micro-breaths |
+| **0.85**        | High                 | Very expressive      | Likely      | Frequent           | Frequent         | Strong prosody variations          |
+| **1.0**         | Maximum              | Full emotional range | Often       | Very frequent      | Very frequent    | Strongest pitch, rate, breaths     |
+
+# 🧩 How It Works Internally
+
+- `sentence_intensity = base_intensity * emotion_level` → scales everything per sentence.
+
+- Thresholds for random features ( like swears >0.9, underbreath laugh >0.75 ) are applied after scaling.
+
+- Micro-breaths, prosody shifts, pitch slides are multiplied directly by `emotion_level`.
+
+- Semantic Kiss & Touch Layer can still add small increments (+0.08–0.12) per sentence, but with `0.7` it stays realistic.
+
+# ✅ Recommendation
+
+- Use 0.7 as default → balanced, expressive voice for normal HA interactions
+
+- Drop to 0.4–0.5 for quiet, subtle moods (like “calm”)
+
+- Raise to 0.85–1.0 if you want “playful” or “intimate” mode with swears, giggles, and full expressivity
+
+_____________________________________________________________________________________________________________
+
 <img width="710" height="943" alt="Screenshot 2026-02-12 125123" src="https://github.com/user-attachments/assets/3a8f3aa0-0ea5-4aa3-a395-1b4461fb8c57" />
 
 _____________________________________________________________________________________________________________
