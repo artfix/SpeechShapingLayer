@@ -6,8 +6,8 @@ def sarah_speak(
     message=None,
     mood=None,
     proximity=False,
-    agent_id="conversation.kira_local",
-    emotion_level=1.0
+    agent_id="conversation.kira_local", # <-- CHANGE ME !!! with your agent
+    emotion_level=0.5
 ):
     """
     Speech Shaping Layer Script
@@ -87,7 +87,6 @@ def sarah_speak(
             "pitch_range": (base_pitch - 20, base_pitch - 1),
             "volume_var": 18,
             "fills": ["yea —", "ohh…", "Aaaw —"],
-        #    "preface": "<amazon:effect name='soft'/>",
             "preface":"<prosody volume='-2dB' rate='-30%' pitch='-8%'><amazon:effect name='soft'/></prosody>",
             "intensity": 0.95
         },
@@ -332,10 +331,6 @@ def sarah_speak(
         prefix = adaptive_starter(sentence, sentence_mood)
         prefix += " " + maybe_breath()
 
-#        # Apply Semantic Kiss & Touch Layer
-#        kiss_prefix, intensity_mod = semantic_kiss_touch(sentence, sentence_mood, profile["intensity"])
-#        prefix = kiss_prefix + prefix
-#        profile["intensity"] = intensity_mod
         # Apply Semantic Kiss & Touch Layer (SAFE VERSION)
         base_intensity = profile["intensity"]
         kiss_prefix, sentence_intensity = semantic_kiss_touch(
@@ -348,13 +343,11 @@ def sarah_speak(
         sentence_intensity = max(0.3, min(1.0, sentence_intensity))
 
         prefix = kiss_prefix + prefix
-#--------------------------------------------------------------------------
 
         words = sentence.split()
         processed_words = []
 
         for w in words:
-#            intensity = dynamic_emotional_contour(w, profile["intensity"])
             intensity = dynamic_emotional_contour(w, sentence_intensity)
             if any(key in w.lower() for key in ["love", "sweet", "beautiful", "dear"]):
                 w = micro_pitch_slide(w, intensity)
@@ -365,18 +358,13 @@ def sarah_speak(
 
         processed_sentence = " ".join(processed_words)
         # Cognitive presence
-#        processed_sentence += maybe_hesitation(profile["intensity"])
         processed_sentence += maybe_hesitation(sentence_intensity)
         # Emotional vulnerability
-#        processed_sentence += maybe_soft_exhale(profile["intensity"])
         processed_sentence += maybe_soft_exhale(sentence_intensity)
         # Shared warmth
-#        processed_sentence += maybe_underbreath_laugh(profile["intensity"])
         processed_sentence += maybe_underbreath_laugh(sentence_intensity)
         # Rare emotional overflow
-#        processed_sentence += maybe_soft_swear(profile["intensity"])
         processed_sentence += maybe_soft_swear(sentence_intensity)
-#        processed_sentence = whisper_wrap(processed_sentence, profile["intensity"])
         processed_sentence = whisper_wrap(processed_sentence, sentence_intensity)
 
         preface = profile.get("preface", "")
