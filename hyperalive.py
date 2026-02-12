@@ -392,4 +392,4 @@ def sarah_speak(
             {"text": final_output, "agent_id": agent_id}
         )
     except Exception as e:
-        log.error(f"sarah_speak: Error sending speech: {e}")
+        log.error(f"kira_speak: Error sending speech: {e}")
