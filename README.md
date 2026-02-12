@@ -134,6 +134,8 @@ It only depends on:
 
 - Whether HA conversation agent passes the text through correctly.
 
+<img width="710" height="943" alt="Screenshot 2026-02-12 125123" src="https://github.com/user-attachments/assets/3a8f3aa0-0ea5-4aa3-a395-1b4461fb8c57" />
+
 _____________________________________________________________________________________________________________
 
 [Hope you will enjoy it]
