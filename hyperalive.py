@@ -6,8 +6,10 @@ def sarah_speak(
     message=None,
     mood=None,
     proximity=False,
-    agent_id="conversation.kira_local", # <-- CHANGE ME !!! with your agent
-    emotion_level=0.5
+    agent_id="conversation.kira_local",
+#    agent_id="conversation.server_local",
+#    agent_id="conversation.ollama_local_web",
+    emotion_level=1.0
 ):
     """
     Speech Shaping Layer Script
@@ -17,7 +19,7 @@ def sarah_speak(
     The agent must: Accept input text, Return text, Not break on XML/SSML content.
     The LLM model does not need to support SSML at all.
     
-    Kira speaking engine — Sol Max + Semantic Kiss & Touch Layer
+    Kira speaking engine — Sol Max + Semantic Kiss & Touch Layer for edge-tts avaNeural
     Fully expressive Sol-style voice:
         • Sub-syllable vowel shaping
         • Consonant softening / velvetization
@@ -43,7 +45,7 @@ def sarah_speak(
     """
 
     if not message:
-        log.error("sarah_speak: No message provided.")
+        log.error("kira_speak: No message provided.")
         return
 
     # ------------------------------
@@ -67,52 +69,52 @@ def sarah_speak(
     # ------------------------------
     # 1. Base Tone
     # ------------------------------
-    base_rate = -90
-    base_pitch = 20
+    base_rate = -40
+    base_pitch = 0
 
     # ------------------------------
     # 2. Sol Max Mood Profiles
     # ------------------------------
     mood_profiles = {
         "playful": {
-            "rate_range": (base_rate + 10, base_rate + 40),
-            "pitch_range": (base_pitch + 10, base_pitch + 40),
-            "volume_var": 5,
+            "rate_range": (base_rate + 60, base_rate + 80),
+            "pitch_range": (base_pitch + 50, base_pitch + 70),
+            "volume_var": 10,
             "fills": ["got it!", "oh really?", "haha —"],
-            "preface": "<amazon:effect name='soft'/>",
-            "intensity": 0.65
+            "preface": "",
+            "intensity": 0.9
         },
         "intimate": {
-            "rate_range": (base_rate - 90, base_rate - 25),
-            "pitch_range": (base_pitch - 20, base_pitch - 1),
-            "volume_var": 18,
+            "rate_range": (base_rate - 55, base_rate - 35),
+            "pitch_range": (base_pitch - 30, base_pitch - 20),
+            "volume_var": -5,
             "fills": ["yea —", "ohh…", "Aaaw —"],
-            "preface":"<prosody volume='-2dB' rate='-30%' pitch='-8%'><amazon:effect name='soft'/></prosody>",
+            "preface": "<prosody volume='-2dB' rate='-30%' pitch='-8%'><amazon:effect name='soft'/></prosody>",
             "intensity": 0.95
         },
         "thoughtful": {
-            "rate_range": (base_rate - 38, base_rate + 5),
-            "pitch_range": (base_pitch - 6, base_pitch + 16),
-            "volume_var": 8,
+            "rate_range": (base_rate - 25, base_rate - 15),
+            "pitch_range": (base_pitch - 10, base_pitch + 5),
+            "volume_var": 4,
             "fills": ["well —", "so,…", "i think…"],
-            "preface": "<amazon:effect name='soft'/>",
+            "preface": "",
             "intensity": 0.55
         },
         "excited": {
-            "rate_range": (base_rate + 5, base_rate + 60),
-            "pitch_range": (base_pitch + 12, base_pitch + 58),
-            "volume_var": 6,
+            "rate_range": (base_rate + 70, base_rate + 90),
+            "pitch_range": (base_pitch + 60, base_pitch + 80),
+            "volume_var": 12,
             "fills": ["wow! —", "sure thing!", "amazing —"],
-            "preface": "<amazon:effect name='soft'/>",
-            "intensity": 0.98
+            "preface": "",
+            "intensity": 1.0
         },
         "calm": {
-            "rate_range": (base_rate - 20, base_rate - 4),
-            "pitch_range": (base_pitch - 8, base_pitch + 3),
-            "volume_var": 5,
+            "rate_range": (base_rate - 10, base_rate + 1),
+            "pitch_range": (base_pitch - 5, base_pitch + 8),
+            "volume_var": 0,
             "fills": ["got it… —", "ah, i see… —", "absolutely! —"],
-            "preface": "<amazon:effect name='soft'/>",
-            "intensity": 0.38
+            "preface": "",
+            "intensity": 0.4
         }
     }
 
@@ -157,12 +159,23 @@ def sarah_speak(
                 if w in text_lower:
                     scores[mood_key] += 1
         detected = max(scores, key=scores.get)
-        final_mood = detected if scores[detected] > 0 else "thoughtful"
+        final_mood = detected if scores[detected] > 0 else "calm"
         update_emotional_state(final_mood)
         return final_mood
+#----------------------------------------------------
+    sentence_mood = mood if mood else detect_mood(sentence)
+    profile = mood_profiles[sentence_mood]
+#----------------------------------------------------
+#    if mood:
+#        sentence_mood = mood
+#    else:
+#        sentence_mood = detect_mood(sentence)
+#    profile = mood_profiles[sentence_mood]
+#---------------------------------------------------
+#ORIGINAL
+#    overall_mood = mood or detect_mood(message)
+#    base_profile = mood_profiles[overall_mood]
 
-    overall_mood = mood or detect_mood(message)
-    base_profile = mood_profiles[overall_mood]
 
     # ------------------------------
     # 6. Adaptive Starter Phrases
@@ -210,7 +223,7 @@ def sarah_speak(
         out = ""
         for s in syllables:
             out += s
-            if random.random() < 0.65 * emotion_level:
+            if random.random() < 0.25 * emotion_level:
                 out += random.choice(["<break time='800ms'/>", "<break time='1200ms'/>"])
         return out
 
@@ -307,7 +320,10 @@ def sarah_speak(
     # ------------------------------
     sentences = [s.strip() for s in re.split(r'[.?!]', message) if s.strip()]
     final_output = "<speak>"
-
+#-------------------------------------------------------
+    overall_mood = mood or detect_mood(message)
+    base_profile = mood_profiles[overall_mood]
+#-------------------------------------------------------    
     prev_rate = random.uniform(*base_profile["rate_range"])
     prev_pitch = random.uniform(*base_profile["pitch_range"])
 
@@ -317,8 +333,8 @@ def sarah_speak(
 
         target_rate = random.uniform(*profile["rate_range"])
         target_pitch = random.uniform(*profile["pitch_range"])
-        rate = prev_rate * 0.6 + target_rate * 0.4
-        pitch = prev_pitch * 0.6 + target_pitch * 0.4
+        rate = prev_rate * 0.3 + target_rate * 0.7
+        pitch = prev_pitch * 0.3 + target_pitch * 0.7
         prev_rate, prev_pitch = rate, pitch
 
         volume = random.choice([-profile["volume_var"], 0, profile["volume_var"]])
@@ -331,6 +347,10 @@ def sarah_speak(
         prefix = adaptive_starter(sentence, sentence_mood)
         prefix += " " + maybe_breath()
 
+#        # Apply Semantic Kiss & Touch Layer
+#        kiss_prefix, intensity_mod = semantic_kiss_touch(sentence, sentence_mood, profile["intensity"])
+#        prefix = kiss_prefix + prefix
+#        profile["intensity"] = intensity_mod
         # Apply Semantic Kiss & Touch Layer (SAFE VERSION)
         base_intensity = profile["intensity"]
         kiss_prefix, sentence_intensity = semantic_kiss_touch(
@@ -343,11 +363,13 @@ def sarah_speak(
         sentence_intensity = max(0.3, min(1.0, sentence_intensity))
 
         prefix = kiss_prefix + prefix
+#--------------------------------------------------------------------------
 
         words = sentence.split()
         processed_words = []
 
         for w in words:
+#            intensity = dynamic_emotional_contour(w, profile["intensity"])
             intensity = dynamic_emotional_contour(w, sentence_intensity)
             if any(key in w.lower() for key in ["love", "sweet", "beautiful", "dear"]):
                 w = micro_pitch_slide(w, intensity)
@@ -392,4 +414,4 @@ def sarah_speak(
             {"text": final_output, "agent_id": agent_id}
         )
     except Exception as e:
-        log.error(f"kira_speak: Error sending speech: {e}")
+        log.error(f"kira_emotional_speak: Error sending speech: {e}")
